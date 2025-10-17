@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // src/supabase/supabase.service.ts
 import { Injectable, OnModuleInit } from '@nestjs/common';
