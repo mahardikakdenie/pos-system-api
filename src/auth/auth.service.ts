@@ -1,6 +1,6 @@
 // src/auth/auth.service.ts
-import { config } from 'dotenv'; // ← tambahkan ini
-config();
+// import { config } from 'dotenv'; // ← tambahkan ini
+// config();
 import {
   Injectable,
   UnauthorizedException,
@@ -65,23 +65,28 @@ export class AuthService {
         throw new InternalServerErrorException('Failed to load user profile');
       }
 
-      // ✅ Respons sukses
-      return {
+      const metaData = {
         access_token: session.access_token,
-        token_type: 'bearer' as const,
+        // token_type: 'bearer' as const,
         user: {
           id: user.id,
           email: user.email,
           profile: profile || null,
         },
       };
+
+      // ✅ Respons sukses
+      return {
+        data: metaData,
+      };
     } catch (err) {
       // Tangani error tak terduga
       if (err instanceof UnauthorizedException) {
         throw err;
       }
-      console.error('Login error:', err);
-      throw new InternalServerErrorException('Authentication service error');
+      throw new InternalServerErrorException(
+        `Authentication service error ${err}`,
+      );
     }
   }
 

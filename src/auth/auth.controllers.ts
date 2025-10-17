@@ -15,17 +15,17 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './auth.dto';
 import { AuthGuard } from './auth.guard';
 
-@Controller('auth')
+@Controller('api')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('login')
+  @Post('/auth/login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
 
-  @Post('register')
+  @Post('/auth/register')
   @HttpCode(HttpStatus.OK)
   async register(@Body() loginDto: LoginDto) {
     return this.authService.register(loginDto.email, loginDto.password);
