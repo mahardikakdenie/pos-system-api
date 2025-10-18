@@ -14,7 +14,6 @@ import { PostgrestSingleResponse } from '@supabase/supabase-js';
 export interface Profile {
   id: string;
   email: string;
-  // tambahkan field lain sesuai tabel `profiles`
   [key: string]: any;
 }
 
