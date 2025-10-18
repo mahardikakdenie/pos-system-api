@@ -52,12 +52,8 @@ export class AuthGuard implements CanActivate {
 
         if (profileError) {
           if (profileError.code === 'PGRST116') {
-            // Tidak ditemukan — boleh lanjut (misal: user baru)
-            console.log(`Profile not found for user: ${data.user.id}`);
             console.log(`Profile not found for user: ${data.user.email}`);
           } else {
-            // Error lain → blokir
-            console.error('Profile fetch error:', profileError);
             throw new UnauthorizedException('Profile verification failed');
           }
         } else {
