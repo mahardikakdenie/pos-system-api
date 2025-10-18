@@ -106,8 +106,6 @@ export class AuthService {
       }
 
       if (user.length > 0) {
-        console.log('user', user);
-
         throw new BadRequestException('Email Sudah Terpakai');
       }
 
@@ -152,11 +150,6 @@ export class AuthService {
   ): Promise<{ success: boolean; message: string }> {
     try {
       await this.supabaseService.getClient().auth.signOut();
-
-      console.log(
-        `User logged out (token: ${accessToken.substring(0, 10)}...)`,
-      );
-
       return {
         success: true,
         message: 'Logged out successfully',
