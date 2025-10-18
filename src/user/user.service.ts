@@ -1,8 +1,11 @@
 // user.service.ts
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { Profile } from '../auth/auth.service';
 import { SupabaseService } from '../supabase/supabase.service';
 import { Paginated } from '../common/types/pagination.type';
+import { UserDTO } from './user.dto';
+import { PostgrestResponse, User } from '@supabase/supabase-js';
+import { MailerService } from 'mailer/mailer.service';
 
 const USER_SCHEME = `
       id,
@@ -17,7 +20,7 @@ const USER_SCHEME = `
     `;
 @Injectable()
 export class UserService {
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(private readonly supabaseService: SupabaseService, private readonly mailService: MailerService) {}
 
   async getUsers(page = 1, limit = 10): Promise<Paginated<Profile>> {
     const offset = (page - 1) * limit;
@@ -86,15 +89,92 @@ export class UserService {
 
   async deleteUserByAdmin(userId: string) {
     try {
-      const {data, error} = await this.supabaseService.getAdminClient().auth.admin.deleteUser(userId);
+      const { data, error } = await this.supabaseService
+        .getAdminClient()
+        .auth.admin.deleteUser(userId);
 
       return {
         data,
         error,
-      }
+      };
     } catch (error) {
       throw new Error(error);
     }
+  }
+
+  async createUser(userPayload: UserDTO) {
+    // HAPUS try-catch global, atau handle dengan benar
+
+    const { data, error } = await this.supabaseService
+      .getAdminClient()
+      .auth.admin.createUser({
+        email: userPayload.email,
+        password: userPayload.password,
+        phone: userPayload.phone,
+        email_confirm: true,
+      });
+
+    if (error) {
+      throw new BadRequestException(
+        {
+          name: error.name,
+          message: error.message,
+        },
+      );
+    }
+
+    if (!data?.user) {
+      throw new NotFoundException(
+        { message: 'User creation returned no data' },
+      );
+    }
+
+    const { data: profileData, error: profileError } =
+      await this.supabaseService
+        .getClient()
+        .from('profiles')
+        .update({
+          role_id: userPayload.role_id,
+        })
+        .eq('id', data.user.id)
+        .select('*')
+        .single();
+        await this.mailService.sendEmail(
+  userPayload.email,
+  'Verifikasi Akun Anda',
+  'Klik link berikut untuk verifikasi: https://ensiklotari.id/verify?token=abc123',
+  `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto;">
+      <h2>👋 Halo!</h2>
+      <p>Terima kasih telah mendaftar di Ensiklotari.</p>
+      <p>Silakan verifikasi akun Anda dengan mengklik tombol di bawah:</p>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="https://ensiklotari.id/verify?token=abc123"
+           style="background-color: #4F46E5; color: white; padding: 12px 24px; 
+                  text-decoration: none; border-radius: 6px; font-weight: bold; 
+                  display: inline-block;">
+          Verifikasi Akun
+        </a>
+      </div>
+
+      <p style="font-size: 12px; color: #666;">
+        Jika tombol tidak berfungsi, salin link berikut:<br>
+        https://ensiklotari.id/verify?token=abc123
+      </p>
+    </div>
+  `,
+);
+
+    if (profileError) {
+      throw new BadRequestException(
+        { message: profileError.message },
+      );
+    }
+
+    return {
+      profileData,
+    };
   }
 
   // === Helpers ===

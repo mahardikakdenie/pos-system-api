@@ -1,10 +1,12 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  Post,
   Query,
   Req,
   UseGuards,
@@ -12,6 +14,7 @@ import {
 import { AuthGuard } from 'auth/auth.guard';
 import { UserService } from './user.service';
 import { Profile } from 'auth/auth.service';
+import { UserDTO } from './user.dto';
 
 @Controller('api/users')
 export class UserController {
@@ -51,5 +54,12 @@ export class UserController {
     if (profile === null) throw new Error('User not found');
 
     return await this.userService.deleteUserByAdmin(id);
+  }
+
+  @Post()
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.CREATED)
+  async createUser(@Body() paylaod: UserDTO) {
+    return this.userService.createUser(paylaod);
   }
 }
