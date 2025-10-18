@@ -1,13 +1,17 @@
 import {
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from 'auth/auth.guard';
 import { UserService } from './user.service';
+import { Profile } from 'auth/auth.service';
 
 @Controller('api/users')
 export class UserController {
@@ -25,5 +29,27 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   async getUserSummary() {
     return await this.userService.getSummary();
+  }
+
+  @Get('me')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async getUserMe(@Req() req: Request) {
+    const profile = req['profile'] as Profile | null;
+
+    if (profile === null) throw new Error('User not found');
+
+    return await this.userService.getUserMe(profile?.id as string);
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async deleteUser(@Param('id') id: string, @Req() req: Request) {
+    const profile = req['profile'] as Profile | null;
+
+    if (profile === null) throw new Error('User not found');
+
+    return await this.userService.deleteUserByAdmin(id);
   }
 }

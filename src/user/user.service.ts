@@ -4,6 +4,17 @@ import { Profile } from '../auth/auth.service';
 import { SupabaseService } from '../supabase/supabase.service';
 import { Paginated } from '../common/types/pagination.type';
 
+const USER_SCHEME = `
+      id,
+      email,
+      role_id,
+      status,
+      role:roles!inner(
+        id,
+        name,
+        descriptions
+      )
+    `;
 @Injectable()
 export class UserService {
   constructor(private readonly supabaseService: SupabaseService) {}
@@ -24,19 +35,7 @@ export class UserService {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('profiles')
-      .select(
-        `
-        id,
-        email,
-        role_id,
-        status,
-        role:roles!inner(
-          id,
-          name,
-          descriptions
-        )
-      `,
-      )
+      .select(USER_SCHEME)
       .neq('role_id', 0)
       .range(offset, offset + limit - 1);
 
@@ -61,13 +60,52 @@ export class UserService {
         .select('*', { count: 'exact', head: false })
         .neq('role_id', 0);
 
-        if (countError) throw new Error(countError.message);
+      if (countError) throw new Error(countError.message);
 
-        return {
-          all: all ?? 0,
-        }
+      return {
+        all: all ?? 0,
+      };
     } catch (error) {
       throw new Error(error);
     }
+  }
+
+  async getUserMe(userId: string) {
+    try {
+      const { data, error } = await this.getSingleUser(userId);
+
+      if (error) throw new Error(error.message);
+
+      return {
+        data,
+      };
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async deleteUserByAdmin(userId: string) {
+    try {
+      const {data, error} = await this.supabaseService.getAdminClient().auth.admin.deleteUser(userId);
+
+      return {
+        data,
+        error,
+      }
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  // === Helpers ===
+  async getSingleUser(userId: string) {
+    const user = await this.supabaseService
+      .getClient()
+      .from('profiles')
+      .select(USER_SCHEME)
+      .eq('id', userId)
+      .single();
+
+    return user;
   }
 }
