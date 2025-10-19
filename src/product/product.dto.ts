@@ -35,7 +35,7 @@ export class CreateProductDTO {
   @IsNotEmpty({ message: 'Status wajib diisi' })
   status: UserStatus;
   
-  @IsObject({ message: 'Metadata harus berupa objek JSON' })
-  @IsNotEmpty({ message: 'Metadata wajib diisi' })
+  @IsObject({ message: 'Logs harus berupa objek JSON' })
+  @IsNotEmpty({ message: 'Logs wajib diisi' })
   logs: Record<string, any>; // atau ganti dengan interface spesifik
 }
