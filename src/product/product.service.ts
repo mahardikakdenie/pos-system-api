@@ -14,6 +14,22 @@ export class ProductService {
                 throw new BadGatewayException({message: error.message, name: error.name});
             }
 
+            return data
+        } catch (error) {
+            throw new BadGatewayException(error);
+        }
+    }
+
+    async createProduct(productPayload: CreateProductDTO) {
+        try {
+            const {data, error} = await this.supabaseService.getClient().from('products').insert(productPayload);
+
+            if (error) {
+                console.log("error :", error.message);
+                
+                throw new BadGatewayException({message: error.message, name: error.name});
+            }
+
             return {
                 data,
             }
