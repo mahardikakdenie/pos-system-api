@@ -60,11 +60,19 @@ export class ProductService {
         .update(productPayload)
         .eq('id', productId);
 
-        if (error) throw new BadGatewayException({message: error.message});
+      if (error) throw new BadGatewayException({ message: error.message });
 
-        return data;
+      return data;
     } catch (error) {
       throw new BadGatewayException(error);
+    }
+  }
+  
+  async getProductById(productId: string) {
+    try {
+        const {} = this.supabaseService.getClient().from('products').select('*').eq('id', productId);
+    } catch (error) {
+        throw new BadGatewayException(error);
     }
   }
 }
