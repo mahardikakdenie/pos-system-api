@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { AuthGuard } from 'auth/auth.guard';
 import { CreateProductDTO } from './product.dto';
@@ -19,5 +19,19 @@ export class ProductController {
     @HttpCode(HttpStatus.CREATED)
     async createProduct(@Body() payload: CreateProductDTO) {
         return await this.productService.createProduct(payload);
+    }
+
+    @Get(':id')
+    @UseGuards(AuthGuard)
+    @HttpCode(HttpStatus.OK)
+    async getProductById(@Param("id") productId: string) {
+        return await this.productService.getProductById(productId);
+    }
+
+    @Put(':id')
+    @UseGuards(AuthGuard)
+    @HttpCode(HttpStatus.OK)
+    async updateProduct(@Param("id") productId: string, @Body() payload: CreateProductDTO) {
+        return await this.productService.updateProduct(payload, productId);
     }
 }
