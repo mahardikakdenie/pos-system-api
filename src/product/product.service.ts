@@ -58,7 +58,8 @@ export class ProductService {
         .getClient()
         .from('products')
         .update(productPayload)
-        .eq('id', productId);
+        .eq('id', productId)
+        .select('*');
 
       if (error) throw new BadGatewayException({ message: error.message });
 
@@ -67,7 +68,7 @@ export class ProductService {
       throw new BadGatewayException(error);
     }
   }
-  
+
   async getProductById(productId: string) {
     try {
         const {} = this.supabaseService.getClient().from('products').select('*').eq('id', productId);
