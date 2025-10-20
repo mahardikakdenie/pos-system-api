@@ -25,8 +25,6 @@ export class ProductService {
             const {data, error} = await this.supabaseService.getClient().from('products').insert(productPayload);
 
             if (error) {
-                console.log("error :", error.message);
-                
                 throw new BadGatewayException({message: error.message, name: error.name});
             }
 

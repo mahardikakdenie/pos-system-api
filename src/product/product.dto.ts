@@ -29,6 +29,10 @@ export class CreateProductDTO {
   @IsNotEmpty({ message: 'Image wajib diisi' })
   image: string;
 
+  @IsString()
+  @IsNotEmpty({message: "Price is required"})
+  price: string;
+
   @IsEnum(UserStatus, {
     message: 'Status harus salah satu dari: active, inactive, suspend',
   })
