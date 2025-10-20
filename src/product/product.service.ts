@@ -1,5 +1,6 @@
 import {
   BadGatewayException,
+  BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -71,7 +72,11 @@ export class ProductService {
 
   async getProductById(productId: string) {
     try {
-        const {} = this.supabaseService.getClient().from('products').select('*').eq('id', productId);
+        const {  data, error } = await this.supabaseService.getClient().from('products').select('*').eq('id', productId);
+
+        if (error) throw new BadRequestException({ message: error.message });
+
+        return data;
     } catch (error) {
         throw new BadGatewayException(error);
     }
