@@ -36,7 +36,10 @@ export class ProductService {
       const { data, error } = await this.supabaseService
         .getClient()
         .from('products')
-        .insert(productPayload);
+        .insert({
+          ...productPayload,
+          slug: this.generateSlug(productPayload.name),
+        });
 
       if (error) {
         throw new BadGatewayException({
@@ -72,13 +75,21 @@ export class ProductService {
 
   async getProductById(productId: string) {
     try {
-        const {  data, error } = await this.supabaseService.getClient().from('products').select('*').eq('id', productId);
+      const { data, error } = await this.supabaseService
+        .getClient()
+        .from('products')
+        .select('*')
+        .eq('id', productId);
 
-        if (error) throw new BadRequestException({ message: error.message });
+      if (error) throw new BadRequestException({ message: error.message });
 
-        return data;
+      return data;
     } catch (error) {
-        throw new BadGatewayException(error);
+      throw new BadGatewayException(error);
     }
   }
+
+  generateSlug = (input: string): string => {
+    return input.toLowerCase().replace(/[^a-z0-9]/g, '-');
+  };
 }
