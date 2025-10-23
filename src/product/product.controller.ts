@@ -1,7 +1,9 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { AuthGuard } from 'auth/auth.guard';
-import { CreateProductDTO } from './product.dto';
+import { CreateProductDTO, UpdateProduct } from './product.dto';
+import { RequireProfile } from 'common/decorator/require-profile.decorator';
+import type { Profile } from 'common/types/profile.type';
 
 @Controller('/api/products')
 export class ProductController {
@@ -31,7 +33,7 @@ export class ProductController {
     @Put(':id')
     @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.OK)
-    async updateProduct(@Param("id") productId: string, @Body() payload: CreateProductDTO) {
-        return await this.productService.updateProduct(payload, productId);
+    async updateProduct(@Param("id") productId: string, @Body() payload: UpdateProduct, @RequireProfile() profile: Profile) {
+        return await this.productService.updateProduct(payload, productId, profile);
     }
 }
