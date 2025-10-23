@@ -5,7 +5,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { SupabaseService } from 'supabase/supabase.service';
-import { CreateProductDTO } from './product.dto';
+import { CreateProductDTO, UpdateProduct } from './product.dto';
+import { PostgrestSingleResponse } from '@supabase/supabase-js';
+import { Profile } from 'common/types/profile.type';
 
 @Injectable()
 export class ProductService {
@@ -56,8 +58,28 @@ export class ProductService {
     }
   }
 
-  async updateProduct(productPayload: CreateProductDTO, productId: string) {
+  async updateProduct(productPayload: UpdateProduct, productId: string, profile: Profile) {
     try {
+      const { data: product, error: errorDetail }: PostgrestSingleResponse<UpdateProduct> = await this.supabaseService
+        .getClient()
+        .from('products')
+        .select('*')
+        .eq('id', productId)
+        .single();
+
+        if (errorDetail) throw new BadGatewayException({ message: errorDetail.message });
+
+        if (product) {
+          productPayload.logs = product.logs;
+
+          productPayload?.logs?.data.push({
+            name: "Update",
+            message: `Update By : ${profile.email}`,
+          });
+
+          productPayload.slug = this.generateSlug(productPayload.name);
+        }
+
       const { data, error } = await this.supabaseService
         .getClient()
         .from('products')
