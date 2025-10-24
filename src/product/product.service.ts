@@ -157,7 +157,6 @@ async getSummaryProducts(): Promise<{
       .select('*', { count: 'exact', head: true })
       .eq('status', 'suspend');
 
-    console.log("🚀 ~ ProductService ~ getSummaryProducts ~ suspendError:", suspendError)
     if (suspendError) throw new BadGatewayException(suspendError.message);
 
     return {
