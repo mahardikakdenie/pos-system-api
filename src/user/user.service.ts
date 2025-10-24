@@ -60,7 +60,7 @@ export class UserService {
       const { count: all, error: countError } = await this.supabaseService
         .getClient()
         .from('profiles')
-        .select('*', { count: 'exact', head: false })
+        .select('*', { count: 'planned', head: false })
         .neq('role_id', 0);
 
       if (countError) throw new Error(countError.message);

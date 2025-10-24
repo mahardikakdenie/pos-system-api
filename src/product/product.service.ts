@@ -58,27 +58,35 @@ export class ProductService {
     }
   }
 
-  async updateProduct(productPayload: UpdateProduct, productId: string, profile: Profile) {
+  async updateProduct(
+    productPayload: UpdateProduct,
+    productId: string,
+    profile: Profile,
+  ) {
     try {
-      const { data: product, error: errorDetail }: PostgrestSingleResponse<UpdateProduct> = await this.supabaseService
+      const {
+        data: product,
+        error: errorDetail,
+      }: PostgrestSingleResponse<UpdateProduct> = await this.supabaseService
         .getClient()
         .from('products')
         .select('*')
         .eq('id', productId)
         .single();
 
-        if (errorDetail) throw new BadGatewayException({ message: errorDetail.message });
+      if (errorDetail)
+        throw new BadGatewayException({ message: errorDetail.message });
 
-        if (product) {
-          productPayload.logs = product.logs;
+      if (product) {
+        productPayload.logs = product.logs;
 
-          productPayload?.logs?.data.push({
-            name: "Update",
-            message: `Update By : ${profile.email}`,
-          });
+        productPayload?.logs?.data.push({
+          name: 'Update',
+          message: `Update By : ${profile.email}`,
+        });
 
-          productPayload.slug = this.generateSlug(productPayload.name);
-        }
+        productPayload.slug = this.generateSlug(productPayload.name);
+      }
 
       const { data, error } = await this.supabaseService
         .getClient()
@@ -111,19 +119,57 @@ export class ProductService {
     }
   }
 
-  async getSummaryProducts() {
-    try {
-      const {data: all, error: allError} = await this.supabaseService.getClient().from('products').select("*", { count: "exact" });
+async getSummaryProducts(): Promise<{
+  all: number;
+  active: number;
+  inactive: number;
+  suspend: number;
+}> {
+  const client = this.supabaseService.getClient();
 
-      if (allError) throw new BadGatewayException({ message: allError.message });
+  try {
+    // Hitung total
+    const { count: allCount, error: allError } = await client
+      .from('products')
+      .select('*', { count: 'exact', head: true });
 
-      return {
-        all,
-      }
-    } catch (error) {
-      throw new BadGatewayException(error);
-    }
+    if (allError) throw new BadGatewayException(allError.message);
+
+    // Hitung active
+    const { count: activeCount, error: activeError } = await client
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'active');
+
+    if (activeError) throw new BadGatewayException(activeError.message);
+
+    // Hitung inactive
+    const { count: inactiveCount, error: inactiveError } = await client
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'inactive');
+
+    if (inactiveError) throw new BadGatewayException(inactiveError.message);
+
+    // Hitung suspend
+    const { count: suspendCount, error: suspendError } = await client
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'suspend');
+
+    console.log("🚀 ~ ProductService ~ getSummaryProducts ~ suspendError:", suspendError)
+    if (suspendError) throw new BadGatewayException(suspendError.message);
+
+    return {
+      all: allCount ?? 0,
+      active: activeCount ?? 0,
+      inactive: inactiveCount ?? 0,
+      suspend: suspendCount ?? 0,
+    };
+  } catch (error) {
+    throw new BadGatewayException(error);
   }
+}
 
   generateSlug = (input: string): string => {
     return input.toLowerCase().replace(/[^a-z0-9]/g, '-');

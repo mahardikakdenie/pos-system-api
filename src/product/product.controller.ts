@@ -16,6 +16,13 @@ export class ProductController {
         return await this.productService.getDataProducts();
     }
 
+    @Get('/stasts/summary')
+    @UseGuards(AuthGuard)
+    @HttpCode(HttpStatus.OK)
+    async getSummaryData() {
+        return await this.productService.getSummaryProducts();
+    }
+
     @Post('')
     @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.CREATED)
