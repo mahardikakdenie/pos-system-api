@@ -111,6 +111,20 @@ export class ProductService {
     }
   }
 
+  async getSummaryProducts() {
+    try {
+      const {data: all, error: allError} = await this.supabaseService.getClient().from('products').select("*", { count: "exact" });
+
+      if (allError) throw new BadGatewayException({ message: allError.message });
+
+      return {
+        all,
+      }
+    } catch (error) {
+      throw new BadGatewayException(error);
+    }
+  }
+
   generateSlug = (input: string): string => {
     return input.toLowerCase().replace(/[^a-z0-9]/g, '-');
   };
