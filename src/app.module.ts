@@ -7,10 +7,11 @@ import { AuthController } from './auth/auth.controllers';
 import { UserModule } from './user/user.module';
 import { ProductModule } from './product/product.module';
 import { CompanyModule } from './company/company.module';
+import { SupabaseService } from 'supabase/supabase.service';
 
 @Module({
   imports: [AuthModule, UserModule, ProductModule, CompanyModule],
   controllers: [AppController, AuthController],
-  providers: [AppService, AuthService],
+  providers: [AppService, AuthService, SupabaseService],
 })
 export class AppModule {}
