@@ -8,9 +8,8 @@ import {
 import { Request, Response } from 'express';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Paginated } from '../types/pagination.type';
 
-export interface ResponseShape<T> {
+export interface ResponseShape {
   meta: {
     status: number;
     message: string;
@@ -19,31 +18,20 @@ export interface ResponseShape<T> {
     per_page?: number;
     last_page?: number;
   };
+  data: unknown; // ✅ gunakan unknown, bukan T
 }
 
-// Type guard to check if response is paginated
-function isPaginated<T>(obj: any): obj is Paginated<T> {
-  console.log("data : ", obj);
-  
-  return (
-    obj &&
-    Array.isArray(obj.data) &&
-    typeof obj.total === 'number' &&
-    (typeof obj.page === 'number' || typeof obj.page === 'string') &&
-    typeof obj.limit === 'number'
-  );
+function isPaginated(obj: any): obj is { data: unknown[]; total: number; page: number; limit: number } {
+  if (!obj || !Array.isArray(obj.data)) return false;
+  const hasOwn = Object.hasOwn || ((o, p) => Object.prototype.hasOwnProperty.call(o, p));
+  return hasOwn(obj, 'total') && hasOwn(obj, 'page') && hasOwn(obj, 'limit');
 }
 
 @Injectable()
-export class ResponseInterceptor<T>
-  implements NestInterceptor<T, ResponseShape<T>>
-{
-  intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Observable<ResponseShape<T>> {
+export class ResponseInterceptor implements NestInterceptor {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<ResponseShape> {
     if (context.getType() !== 'http') {
-      return next.handle() as Observable<ResponseShape<T>>;
+      return next.handle() as Observable<any>;
     }
 
     const http = context.switchToHttp();
@@ -54,24 +42,26 @@ export class ResponseInterceptor<T>
     const message = this.getMessageFromRequest(request);
 
     return next.handle().pipe(
-      map((data: T) => {
-        // ✅ Check if data is a paginated response
+      map((data: unknown) => {
         if (isPaginated(data)) {
-          const lastPages = Math.ceil(data.total / data.limit);
+          const total = Number(data.total);
+          const page = Number(data.page);
+          const perPage = Number(data.limit);
+          const lastPage = Math.ceil(total / perPage);
+
           return {
             meta: {
               status: statusCode,
               message,
-              total: data.total,
-              page: data.page,
-              per_page: data.limit,
-              last_page: lastPages,
+              total,
+              page,
+              per_page: perPage,
+              last_page: lastPage,
             },
             data: data.data,
           };
         }
 
-        // ✅ Fallback: simple array or object
         const total = Array.isArray(data) ? data.length : undefined;
         return {
           meta: {
@@ -87,14 +77,18 @@ export class ResponseInterceptor<T>
 
   private getMessageFromRequest(request: Request): string {
     const method = request.method;
-    const path = request.route?.path ?? '';
-
-    if (method === 'POST') {
-      if (path.includes('login')) return 'Successfully logged in';
-      return 'Successfully created';
+    switch (method) {
+      case 'POST':
+        return request.route?.path?.includes('login')
+          ? 'Successfully logged in'
+          : 'Successfully created';
+      case 'PUT':
+      case 'PATCH':
+        return 'Successfully updated';
+      case 'DELETE':
+        return 'Successfully deleted';
+      default:
+        return 'Success';
     }
-    if (method === 'PUT' || method === 'PATCH') return 'Successfully updated';
-    if (method === 'DELETE') return 'Successfully deleted';
-    return 'Success';
   }
 }
