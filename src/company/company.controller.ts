@@ -1,4 +1,16 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CompanyService } from './company.service';
 
-@Controller('company')
-export class CompanyController {}
+@ApiTags('Company')
+@Controller('/api/company')
+export class CompanyController {
+    constructor(private readonly companyService: CompanyService) {}
+
+    @Get('')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get all companies data' })
+    async getDataCompany() {
+        return await this.companyService.getDataCompanies();
+    }
+}

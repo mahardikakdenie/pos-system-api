@@ -16,4 +16,12 @@ export class CompanyService {
             throw new BadGatewayException(error);
         }
     }
+
+    async createCompanyData() {
+        try {
+            const {} = this.supabaseService.getClient().from('companies').insert({}).select('*');
+        } catch (error) {
+            throw new BadGatewayException(error);
+        }
+    }
 }
