@@ -1,6 +1,7 @@
-import { Controller, Get } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CompanyService } from './company.service';
+import { CompanyDTO } from './company.dto';
 
 @ApiTags('Company')
 @Controller('/api/company')
@@ -12,5 +13,13 @@ export class CompanyController {
     @ApiOperation({ summary: 'Get all companies data' })
     async getDataCompany() {
         return await this.companyService.getDataCompanies();
+    }
+
+    @Post('')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Create new company data' })
+    @ApiBody({ type: CompanyDTO })
+    async createCompany(@Body() companyPayload: CompanyDTO) {
+        return await this.companyService.createCompanyData(companyPayload);
     }
 }

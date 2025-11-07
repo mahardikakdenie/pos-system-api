@@ -13,9 +13,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // Hapus properti non-DTO
-      forbidNonWhitelisted: true, // Tolak properti tidak dikenal
-      transform: true, // Transform ke instance class
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
     }),
   );
   app.useGlobalInterceptors(new ResponseInterceptor());
@@ -27,7 +27,7 @@ async function bootstrap() {
     .setDescription('The CMS API description')
     .setVersion('1.0')
     .addTag('CMS DASHBOARD SYSTEM')
-    .addBearerAuth() // opsional: jika pakai JWT
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

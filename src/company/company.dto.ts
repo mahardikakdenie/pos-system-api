@@ -9,17 +9,21 @@ export class CompanyDTO {
 
     @IsString()
     @IsNotEmpty()
+    @ApiProperty({example: ''})
     email: string;
 
     @IsString()
+    @ApiProperty({example: 'pt-donat-merderka'})
     @IsNotEmpty()
     slug: string;
 
     @IsString()
+    @ApiProperty({example: 'https://pt-donat-merderka.com'})
     @IsNotEmpty()
     account_url: string;
 
     @IsString()
+    @ApiProperty({example: 'requested'})
     @IsNotEmpty()
     status: string;
 }
