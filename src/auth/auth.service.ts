@@ -25,7 +25,6 @@ export class AuthService {
     const { email, password } = loginDto;
 
     try {
-      // 🔐 Login ke Supabase Auth
       const { data, error } = await this.supabaseService
         .getClient()
         .auth.signInWithPassword({
@@ -33,9 +32,7 @@ export class AuthService {
           password,
         });
 
-      // ✅ Penanganan error yang aman (tanpa akses .message pada unknown)
       if (error) {
-        // error.message aman karena Supabase menjamin error bertipe AuthError
         throw new UnauthorizedException(
           error.message || 'Invalid email or password',
         );
@@ -44,7 +41,6 @@ export class AuthService {
       const { session } = data;
       const user = session.user;
 
-      // 👤 Ambil data profil dari tabel `public.profiles`
       const {
         data: profile,
         error: profileError,
@@ -55,7 +51,6 @@ export class AuthService {
         .eq('id', user.id)
         .single();
 
-      // Jika error selain "not found", lempar exception
       if (
         profileError &&
         profileError.code !== 'PGRST116' // PGRST116 = no rows returned
@@ -66,12 +61,6 @@ export class AuthService {
 
       const metaData = {
         access_token: session.access_token,
-        // token_type: 'bearer' as const,
-        user: {
-          id: user.id,
-          email: user.email,
-          profile: profile || null,
-        },
       };
 
       // ✅ Respons sukses
@@ -144,7 +133,6 @@ export class AuthService {
     }
   }
 
-  // Tambahkan method logout di akhir class AuthService
   async logout(
     accessToken: string,
   ): Promise<{ success: boolean; message: string }> {
