@@ -9,7 +9,7 @@ export class CompanyDTO {
 
     @IsString()
     @IsNotEmpty()
-    @ApiProperty({example: ''})
+    @ApiProperty({example: 'ptdonat@donat.co'})
     email: string;
 
     @IsString()
