@@ -1,6 +1,5 @@
-// src/main.ts
-import { config } from 'dotenv'; // ← tambahkan ini
-config(); // ← muat .env
+import { config } from 'dotenv';
+config();
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
