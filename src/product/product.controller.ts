@@ -11,10 +11,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
-import { AuthGuard } from 'auth/auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
 import { CreateProductDTO, UpdateProduct } from './product.dto';
-import { RequireProfile } from 'common/decorator/require-profile.decorator';
-import type { Profile } from 'common/types/profile.type';
+import { RequireProfile } from '../common/decorator/require-profile.decorator';
+import type { Profile } from '../common/types/profile.type';
 import {
   ApiTags,
   ApiOperation,
