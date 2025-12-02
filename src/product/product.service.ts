@@ -4,10 +4,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { SupabaseService } from 'supabase/supabase.service';
+import { SupabaseService } from '../supabase/supabase.service';
 import { CreateProductDTO, UpdateProduct } from './product.dto';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { Profile } from 'common/types/profile.type';
+import { Profile } from '../common/types/profile.type';
 
 @Injectable()
 export class ProductService {
