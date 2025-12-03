@@ -70,7 +70,7 @@
 	"editor.unicodeHighlight.invisibleCharacters": false,
 	"terminal.integrated.defaultProfile.windows": "Git Bash",
 	"[typescript]": {
-		"editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+		"editor.defaultFormatter": "vscode.typescript-language-features"
 	},
 	"workbench.colorTheme": "JetBrains Darcula Theme",
 	"github.copilot.nextEditSuggestions.enabled": true,
