@@ -1,4 +1,5 @@
 // src/auth/dto/login.dto.ts
+import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, isNotEmpty, IsNotEmpty, isString, IsString } from 'class-validator';
 
 export class UserDTO {
@@ -27,4 +28,12 @@ export class RegisterDto {
   @IsString()
   @IsNotEmpty({ message: 'Password wajib diisi' })
   password: string;
+}
+
+export class ProfileResponse {
+  @ApiProperty({ example: '287d7a48-75cf-4aab-8512-2ba8e5be8aaf' })
+  id: string;
+
+  @ApiProperty({ example: 'superadmin@yopmail.com' })
+  email: string;
 }
