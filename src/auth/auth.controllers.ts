@@ -23,7 +23,7 @@ import {
 @ApiTags('Auth')
 @Controller('api')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('auth/login')
   @HttpCode(HttpStatus.OK)
@@ -34,7 +34,24 @@ export class AuthController {
     description: 'Login successful',
     schema: {
       example: {
-        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx',
+        meta: {
+          status: 200,
+          message: "Successfully logged in"
+        },
+        data: {
+          access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx',
+          user: {
+            id: "979a0eca-2fca-401a-9a7e-6f319c968602",
+            email: "xxxx@xxx.com",
+            role_id: 1,
+            status: "active",
+            role: {
+              id: 1,
+              name: "xxx",
+              descriptions: "xxx"
+            }
+          }
+        }
       },
     },
   })
