@@ -19,7 +19,7 @@ export interface Profile {
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(private readonly supabaseService: SupabaseService) { }
 
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
@@ -44,31 +44,34 @@ export class AuthService {
       const {
         data: profile,
         error: profileError,
-      }: PostgrestSingleResponse<Profile> = await this.supabaseService // PostgrestSingleResponse<Profile>
+      }: PostgrestSingleResponse<Profile> = await this.supabaseService
         .getClient()
         .from('profiles')
-        .select('*')
+        .select(`id,
+      email,
+      role_id,
+      status,
+      role:roles!inner(
+        id,
+        name,
+        descriptions
+      )`)
         .eq('id', user.id)
         .single();
 
       if (
         profileError &&
-        profileError.code !== 'PGRST116' // PGRST116 = no rows returned
+        profileError.code !== 'PGRST116'
       ) {
         console.error('Profile fetch error:', profileError);
         throw new InternalServerErrorException('Failed to load user profile');
       }
 
-      const metaData = {
-        access_token: session.access_token,
-      };
-
-      // ✅ Respons sukses
       return {
-        data: metaData,
+        access_token: session.access_token,
+        user: profile,
       };
     } catch (err) {
-      // Tangani error tak terduga
       if (err instanceof UnauthorizedException) {
         throw err;
       }
@@ -88,7 +91,6 @@ export class AuthService {
         .eq('email', email);
 
       if (errorFetchedUser) {
-        // errorFetchedUser dari Supabase (misal: email sudah terdaftar, password lemah)
         throw new BadRequestException(
           `users failed : ${errorFetchedUser.message}`,
         );
