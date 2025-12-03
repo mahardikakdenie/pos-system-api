@@ -10,9 +10,10 @@ import { CompanyModule } from './company/company.module';
 import { SupabaseService } from 'supabase/supabase.service';
 import { ThemeModule } from './theme/theme.module';
 import { ResumeModule } from './resume/resume.module';
+import { RecipeModule } from './recipe/recipe.module';
 
 @Module({
-  imports: [AuthModule, UserModule, ProductModule, CompanyModule, ThemeModule, ResumeModule],
+  imports: [AuthModule, UserModule, ProductModule, CompanyModule, ThemeModule, ResumeModule, RecipeModule],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService, SupabaseService],
 })
