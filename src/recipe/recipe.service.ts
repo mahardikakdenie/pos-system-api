@@ -43,7 +43,6 @@ export class RecipeService {
             }
 
             return data;
-
         } catch (error) {
             throw new BadGatewayException({
                 message: error.message,
