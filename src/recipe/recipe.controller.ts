@@ -1,5 +1,5 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
-import { ApiOkResponse } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { ApiBody, ApiOkResponse } from '@nestjs/swagger';
 import { RecipeDTO } from './recipe.dto';
 import { RecipeService } from './recipe.service';
 import { AuthGuard } from 'auth/auth.guard';
@@ -13,7 +13,17 @@ export class RecipeController {
         type: RecipeDTO
     })
     @UseGuards(AuthGuard)
+    @HttpCode(HttpStatus.OK)
     async getData() {
         return this.recipeService.getDataRecipe();
+    }
+
+    @Post('')
+    @UseGuards(AuthGuard)
+    @HttpCode(HttpStatus.CREATED)
+    @ApiBody({ type: AuthGuard })
+    @ApiOkResponse({ type: RecipeDTO })
+    async createRecipe(@Body() recipePayload: RecipeDTO) {
+        return this.recipeService.createRecipe(recipePayload);
     }
 }
