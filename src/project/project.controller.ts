@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOkResponse } from '@nestjs/swagger';
 import { AuthGuard } from 'auth/auth.guard';
 import { ProjectDTO, ProjectListResponseDto } from './project.dto';
@@ -25,5 +25,15 @@ export class ProjectController {
     @ApiBody({ type: ProjectDTO })
     async createProject(@Body() projectPayload: ProjectDTO) {
         return await this.projectService.createProject(projectPayload);
+    }
+
+    @Put(':id')
+    @UseGuards(AuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiOkResponse({type: ProjectListResponseDto})
+    @ApiBody({type: ProjectDTO})
+    async updateProject(@Param() projectId: number, @Body() projectPayload: ProjectDTO) {
+        return await this.projectService.updateProjects(projectPayload, projectId);
     }
 }
