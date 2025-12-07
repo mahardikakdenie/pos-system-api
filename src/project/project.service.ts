@@ -73,4 +73,25 @@ export class ProjectService {
       throw new BadGatewayException(error);
     }
   }
+
+  async deleteProjects(projectId: number) {
+    try {
+        const {data, error} = await this.supabaseService.getClient()
+            .from('projects')
+            .delete()
+            .eq('id', projectId)
+            .select('*');
+
+            if (error) {
+                throw new BadGatewayException({
+                    message: error.message,
+                    name: error.name,
+                });
+            }
+
+            return data;
+    } catch (error) {
+        throw new BadGatewayException(error);
+    }
+  }
 }
