@@ -12,6 +12,8 @@ const USER_SCHEME = `
       email,
       role_id,
       status,
+      created_at,
+      phone,
       role:roles!inner(
         id,
         name,
