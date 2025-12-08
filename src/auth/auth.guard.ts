@@ -9,6 +9,7 @@ import { SupabaseService } from '../supabase/supabase.service';
 import { Request } from 'express';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { Profile } from './auth.service';
+import { USER_SCHEME } from 'user/user.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -46,7 +47,7 @@ export class AuthGuard implements CanActivate {
         }: PostgrestSingleResponse<Profile> = await this.supabaseService
           .getClient()
           .from('profiles')
-          .select('*')
+          .select(USER_SCHEME)
           .eq('id', data.user.id) // atau .eq('user_id', userId)
           .single();
 
