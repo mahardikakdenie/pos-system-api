@@ -20,7 +20,8 @@ const RESUME_SCHEMA = `
   profile:profiles!inner(
     id,
     email
-  )
+  ),
+  projects(id, name)
 `;
 
 @Injectable()
