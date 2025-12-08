@@ -3,13 +3,16 @@ import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiParam, ApiQuery } from '@nest
 import { AuthGuard } from 'auth/auth.guard';
 import { ProjectDTO, ProjectListResponseDto } from './project.dto';
 import { ProjectService } from './project.service';
+import { RoleGuard } from 'auth/role.guard.guard';
+import { RequireRole } from 'common/common.decorator';
 
 @Controller('api/project')
 export class ProjectController {
     constructor(private readonly projectService: ProjectService) { }
 
     @Get('')
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard, RoleGuard)
+    @RequireRole('admin', 'superadmin')
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @ApiOkResponse({ type: ProjectListResponseDto })
