@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiParam } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { AuthGuard } from 'auth/auth.guard';
 import { ProjectDTO, ProjectListResponseDto } from './project.dto';
 import { ProjectService } from './project.service';
@@ -13,8 +13,10 @@ export class ProjectController {
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @ApiOkResponse({ type: ProjectListResponseDto })
-    async getDataProjects() {
-        return await this.projectService.getDataProjects();
+    @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+    @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
+    async getDataProjects(@Query('page') page: number = 1, @Query('limit') limit: number = 5) {
+        return await this.projectService.getDataProjects(page, limit);
     }
 
     @Post('')
