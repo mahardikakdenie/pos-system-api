@@ -7,7 +7,7 @@ import { UserDTO } from './user.dto';
 import { PostgrestResponse, User } from '@supabase/supabase-js';
 import { MailerService } from 'mailer/mailer.service';
 
-const USER_SCHEME = `
+export const USER_SCHEME = `
       id,
       email,
       role_id,
