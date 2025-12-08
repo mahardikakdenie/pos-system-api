@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsString, IsOptional, IsNotEmpty } from 'class-validator';
+import { IsArray, IsString, IsOptional, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class ProjectDTO {
   @IsString()
@@ -73,6 +73,14 @@ export class ProjectDTO {
     description: 'URL live demo atau repo proyek',
   })
   url?: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty({
+    example: 0,
+    description: 'Resume Id for register the resume relates',
+  })
+  resume_id: number;
 }
 
 class ProjectResponseMeta {
