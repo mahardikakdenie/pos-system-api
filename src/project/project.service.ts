@@ -1,30 +1,24 @@
 import { BadGatewayException, Injectable } from '@nestjs/common';
 import { SupabaseService } from 'supabase/supabase.service';
 import { ProjectDTO } from './project.dto';
-import { Paginated } from 'common/types/pagination.type';
+import { Paginated } from '../common/types/pagination.type';
+import { entities } from '../common/helpers';
 
-const PROJECT_SCHEME = `
-    id,
-    name,
-    resume_id,
-    link,
-    type,
-    tools,
-    images,
-    resumes(id, name)
-`;
+const PROJECT_SCHEME = 'id,name,resume_id,link,type,tools,images';
+
 @Injectable()
 export class ProjectService {
     constructor(private readonly supabaseService: SupabaseService) { }
 
-
-    async getDataProjects(page: number = 1, limit: number = 10): Promise<Paginated<ProjectDTO>> {
+    async getDataProjects(page: number = 1, limit: number = 10, selectedEntities: string = ''): Promise<Paginated<ProjectDTO>> {
         try {
+            const entitiesArray = selectedEntities ? selectedEntities.split(',').map(e => e.trim()) : [];
+
             const offset = (page - 1) * limit;
             const { data, error, count } = await this.supabaseService
                 .getClient()
                 .from('projects')
-                .select(PROJECT_SCHEME, { count: 'exact' })
+                .select(entities('*', entitiesArray), { count: 'exact' })
                 .range(offset, offset + limit - 1);
 
             if (error) {
@@ -34,12 +28,12 @@ export class ProjectService {
                 });
             }
 
-        return {
-      limit,
-      page,
-      data: data as ProjectDTO[],
-      total: count as number,
-    };
+            return {
+                limit,
+                page,
+                data: data as unknown as ProjectDTO[],
+                total: count as number,
+            };
         } catch (error) {
             throw new BadGatewayException({
                 message: error.message,
@@ -83,20 +77,24 @@ export class ProjectService {
 
             if (error) {
                 throw new BadGatewayException({
-                    name: error.name,
                     message: error.message,
+                    name: error.name,
                 });
             }
 
             return data;
         } catch (error) {
-            throw new BadGatewayException(error);
+            throw new BadGatewayException({
+                message: error.message,
+                name: error.name,
+            });
         }
     }
 
     async deleteProjects(projectId: number) {
         try {
-            const { data, error } = await this.supabaseService.getClient()
+            const { data, error } = await this.supabaseService
+                .getClient()
                 .from('projects')
                 .delete()
                 .eq('id', projectId)
@@ -111,7 +109,10 @@ export class ProjectService {
 
             return data;
         } catch (error) {
-            throw new BadGatewayException(error);
+            throw new BadGatewayException({
+                message: error.message,
+                name: error.name,
+            });
         }
     }
 }
