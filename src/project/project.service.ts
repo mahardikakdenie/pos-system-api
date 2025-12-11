@@ -4,8 +4,6 @@ import { ProjectDTO } from './project.dto';
 import { Paginated } from '../common/types/pagination.type';
 import { entities } from '../common/helpers';
 
-const PROJECT_SCHEME = 'id,name,resume_id,link,type,tools,images';
-
 @Injectable()
 export class ProjectService {
     constructor(private readonly supabaseService: SupabaseService) { }
