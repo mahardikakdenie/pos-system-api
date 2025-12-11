@@ -18,8 +18,19 @@ export class ProjectController {
     @ApiOkResponse({ type: ProjectListResponseDto })
     @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
     @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
-    async getDataProjects(@Query('page') page: number = 1, @Query('limit') limit: number = 5) {
-        return await this.projectService.getDataProjects(page, limit);
+    @ApiQuery({
+        name: 'entities',
+        required: false,
+        type: String,
+        example: 'resumes(id,name),tags(id,name)',
+        description: 'Comma-separated list of relation fields. Example: resumes(id,name)'
+    })
+    async getDataProjects(
+        @Query('page') page: number = 1,
+        @Query('limit') limit: number = 5,
+        @Query('entities') entities: string = ''
+    ) {
+        return await this.projectService.getDataProjects(page, limit, entities);
     }
 
     @Post('')
