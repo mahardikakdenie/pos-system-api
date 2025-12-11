@@ -17,7 +17,6 @@ export class RoleGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    // Jika tidak ada metadata 'roles', izinkan (opsional)
     if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
