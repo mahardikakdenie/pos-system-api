@@ -18,6 +18,18 @@ export class UserDTO {
   @IsString()
   @IsNotEmpty({ message: 'Password wajib diisi' })
   role_id: string;
+
+  @IsString()
+  @ApiProperty({example: 'string'})
+  name: string;
+
+  @IsString()
+  @ApiProperty({example: 'string'})
+  username: string;
+
+  @IsString()
+  @ApiProperty({example: 'string'})
+  avatar: string;
 }
 
 export class RegisterDto {
