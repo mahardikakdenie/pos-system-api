@@ -47,7 +47,7 @@ export class AuthGuard implements CanActivate {
         }: PostgrestSingleResponse<Profile> = await this.supabaseService
           .getClient()
           .from('profiles')
-          .select(USER_SCHEME)
+          .select('*')
           .eq('id', data.user.id) // atau .eq('user_id', userId)
           .single();
 
