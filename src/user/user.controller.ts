@@ -15,7 +15,7 @@ import {
 import { AuthGuard } from 'auth/auth.guard';
 import { UserService } from './user.service';
 import { Profile } from 'auth/auth.service';
-import { UserDTO } from './user.dto';
+import { ProfileDTO, UserDTO } from './user.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -139,7 +139,7 @@ export class UserController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @HttpCode(HttpStatus.OK)
-  async updateUserProfile(@Body() profilePayload: UserDTO, @Param('id') userId: string) {
+  async updateUserProfile(@Body() profilePayload: ProfileDTO, @Param('id') userId: string) {
     return await this.userService.updateUserProfile(profilePayload, userId);
   }
 }
