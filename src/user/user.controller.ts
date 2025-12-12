@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -127,5 +128,18 @@ export class UserController {
   @HttpCode(HttpStatus.CREATED)
   async createUser(@Body() payload: UserDTO) {
     return this.userService.createUser(payload);
+  }
+
+  @Put('update/profile/:id')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update User Profile' })
+  @ApiBody({type: UserDTO})
+  @ApiResponse({ status: 400, description: 'Bad Request (validation failed)' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @HttpCode(HttpStatus.OK)
+  async updateUserProfile(@Body() profilePayload: UserDTO, @Param('id') userId: string) {
+    return await this.userService.updateUserProfile(profilePayload, userId);
   }
 }
