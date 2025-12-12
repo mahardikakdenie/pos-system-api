@@ -1,11 +1,20 @@
 // user.service.ts
-import { BadGatewayException, BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Profile } from '../auth/auth.service';
 import { SupabaseService } from '../supabase/supabase.service';
 import { Paginated } from '../common/types/pagination.type';
-import { UserDTO } from './user.dto';
+import { ProfileDTO, UserDTO } from './user.dto';
 import { PostgrestResponse, User } from '@supabase/supabase-js';
 import { MailerService } from 'mailer/mailer.service';
+import { mergeWithExisting } from 'common/utils/merge-with-existing';
+import { entities } from 'common/helpers';
 
 export const USER_SCHEME = `
       id,
@@ -22,7 +31,10 @@ export const USER_SCHEME = `
     `;
 @Injectable()
 export class UserService {
-  constructor(private readonly supabaseService: SupabaseService, private readonly mailService: MailerService) {}
+  constructor(
+    private readonly supabaseService: SupabaseService,
+    private readonly mailService: MailerService,
+  ) {}
 
   async getUsers(page = 1, limit = 10): Promise<Paginated<Profile>> {
     const offset = (page - 1) * limit;
@@ -36,11 +48,17 @@ export class UserService {
 
     if (countError) throw new Error(countError.message);
 
+    const rolesEntities = `role:roles!inner(
+        id,
+        name,
+        descriptions
+      )`;
+
     // Get data
     const { data, error } = await this.supabaseService
       .getClient()
       .from('profiles')
-      .select(USER_SCHEME)
+      .select(entities('*', [rolesEntities]))
       .neq('role_id', 0)
       .range(offset, offset + limit - 1);
 
@@ -49,7 +67,7 @@ export class UserService {
     return {
       limit,
       page,
-      data: data,
+      data: data as unknown as Profile[],
       total: count as number,
     };
   }
@@ -117,18 +135,16 @@ export class UserService {
       });
 
     if (error) {
-      throw new BadRequestException(
-        {
-          name: error.name,
-          message: error.message,
-        },
-      );
+      throw new BadRequestException({
+        name: error.name,
+        message: error.message,
+      });
     }
 
     if (!data?.user) {
-      throw new NotFoundException(
-        { message: 'User creation returned no data' },
-      );
+      throw new NotFoundException({
+        message: 'User creation returned no data',
+      });
     }
 
     const { data: profileData, error: profileError } =
@@ -141,11 +157,11 @@ export class UserService {
         .eq('id', data.user.id)
         .select('*')
         .single();
-        await this.mailService.sendEmail(
-  userPayload.email,
-  'Verifikasi Akun Anda',
-  'Klik link berikut untuk verifikasi: https://ensiklotari.id/verify?token=abc123',
-  `
+    await this.mailService.sendEmail(
+      userPayload.email,
+      'Verifikasi Akun Anda',
+      'Klik link berikut untuk verifikasi: https://ensiklotari.id/verify?token=abc123',
+      `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto;">
       <h2>👋 Halo!</h2>
       <p>Terima kasih telah mendaftar di Ensiklotari.</p>
@@ -166,34 +182,61 @@ export class UserService {
       </p>
     </div>
   `,
-);
+    );
 
     if (profileError) {
-      throw new BadRequestException(
-        { message: profileError.message },
-      );
+      throw new BadRequestException({ message: profileError.message });
     }
 
     return {
       profileData,
     };
   }
-  
-  async updateUserProfile(profilPayload: UserDTO, userId: string) {
+
+  async updateUserProfile(profilPayload: ProfileDTO, userId: string) {
     try {
-      const {data, error} = await this.supabaseService.getClient()
+      const fetchExistingData = async (
+        fields: string[],
+      ): Promise<any | null> => {
+        const { data, error } = await this.supabaseService
+          .getClient()
+          .from('profiles')
+          .select(fields.join(','))
+          .eq('id', userId)
+          .single();
+
+        if (error) {
+          if (error.code === 'PGRST116') return null;
+          throw new BadGatewayException({
+            name: error.name,
+            message: error.message,
+          });
+        }
+        return data;
+      };
+
+      // Merge data
+      const mergedData = await mergeWithExisting(
+        profilPayload as Partial<ProfileDTO>,
+        {
+          profileFields: ['username', 'name', 'avatar', 'phone', 'role_id'],
+          fetchExistingData: fetchExistingData,
+        },
+      );
+      const { data, error } = await this.supabaseService
+        .getClient()
         .from('profiles')
-        .update(profilPayload)
-        .eq('id', userId)
+        .upsert({ id: userId, ...mergedData })
         .select('*');
+
+      console.log(error);
 
       if (error) {
         throw new BadGatewayException({
           message: error.message,
           name: error.name,
-        })
-      };
-
+        });
+      }
 
       return data;
     } catch (error) {
