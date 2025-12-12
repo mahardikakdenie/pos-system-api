@@ -1,5 +1,5 @@
 // user.service.ts
-import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { BadGatewayException, BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { Profile } from '../auth/auth.service';
 import { SupabaseService } from '../supabase/supabase.service';
 import { Paginated } from '../common/types/pagination.type';
@@ -177,6 +177,28 @@ export class UserService {
     return {
       profileData,
     };
+  }
+  
+  async updateUserProfile(profilPayload: UserDTO, userId: string) {
+    try {
+      const {data, error} = await this.supabaseService.getClient()
+        .from('profiles')
+        .update(profilPayload)
+        .eq('id', userId)
+        .select('*');
+
+      if (error) {
+        throw new BadGatewayException({
+          message: error.message,
+          name: error.name,
+        })
+      };
+
+
+      return data;
+    } catch (error) {
+      throw new BadGatewayException(error);
+    }
   }
 
   // === Helpers ===
