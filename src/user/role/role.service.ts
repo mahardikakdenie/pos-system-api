@@ -1,0 +1,48 @@
+import { BadGatewayException, Injectable } from '@nestjs/common';
+import { entities } from 'common/helpers';
+import { SupabaseService } from 'supabase/supabase.service';
+
+@Injectable()
+export class RoleService {
+    constructor(private readonly supabaseService: SupabaseService) { }
+
+    async getData(
+        page: number = 1,
+        limit: number = 10,
+        selectedEntities: string = '',
+        search: string = '',
+        orderBy: string = '',
+        sorting: 'desc' | 'asc' = 'desc'
+    ) {
+        try {
+            const offset = (page - 1) * limit;
+            let query = this.supabaseService.getClient()
+                .from('roles')
+                .select(entities('*', selectedEntities), { count: 'exact' })
+                .order(orderBy, { ascending: sorting === 'desc' })
+                .range(offset, offset + limit - 1);
+
+            if (search) {
+                query = query.like('name', `%${search}%`);
+            }
+
+            const { data, error, count } = await query;
+
+            if (error) {
+                throw new BadGatewayException({
+                    name: error.name,
+                    message: error.message,
+                });
+            }
+
+            return {
+                limit,
+                page,
+                data: data as unknown,
+                total: count as number,
+            };
+        } catch (error) {
+            throw new BadGatewayException(error);
+        }
+    }
+}
