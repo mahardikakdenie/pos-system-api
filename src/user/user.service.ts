@@ -58,7 +58,7 @@ export class UserService {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('profiles')
-      .select(entities('*', [rolesEntities]))
+      .select(entities('*', rolesEntities))
       .neq('role_id', 0)
       .range(offset, offset + limit - 1);
 
