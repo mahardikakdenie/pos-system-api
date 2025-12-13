@@ -10,13 +10,11 @@ export class ProjectService {
 
     async getDataProjects(page: number = 1, limit: number = 10, selectedEntities: string = ''): Promise<Paginated<ProjectDTO>> {
         try {
-            const entitiesArray = selectedEntities ? selectedEntities.split(',').map(e => e.trim()) : [];
-
             const offset = (page - 1) * limit;
             const { data, error, count } = await this.supabaseService
                 .getClient()
                 .from('projects')
-                .select(entities('*', entitiesArray), { count: 'exact' })
+                .select(entities('*', selectedEntities), { count: 'exact' })
                 .range(offset, offset + limit - 1);
 
             if (error) {
