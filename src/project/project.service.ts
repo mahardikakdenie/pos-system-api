@@ -1,8 +1,9 @@
-import { BadGatewayException, Injectable } from '@nestjs/common';
+import { BadGatewayException, BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { SupabaseService } from 'supabase/supabase.service';
 import { ProjectDTO } from './project.dto';
 import { Paginated } from '../common/types/pagination.type';
 import { entities } from '../common/helpers';
+import { ProfileDATA, ProfileDTO } from 'user/user.dto';
 
 @Injectable()
 export class ProjectService {
@@ -109,6 +110,28 @@ export class ProjectService {
                 message: error.message,
                 name: error.name,
             });
+        }
+    }
+
+    async getMyProjects(profile: ProfileDATA) {
+        try {
+            if (!profile) throw new UnauthorizedException();
+
+            const { data, error, count } = await this.supabaseService.getClient()
+                .from('projects')
+                .select(entities('*', `resumes(id,name, profiles(id))`))
+                .eq('resume.profiles.id', profile?.id as string);
+
+                if (error) {
+                    throw new BadRequestException({
+                        name: error.name,
+                        message: error.message,
+                    });
+                }
+
+                return data;
+        } catch (error) {
+            throw new BadGatewayException(error);
         }
     }
 }
