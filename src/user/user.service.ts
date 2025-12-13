@@ -27,7 +27,8 @@ export const USER_SCHEME = `
         id,
         name,
         descriptions
-      )
+      ),
+      companies(id)
     `;
 @Injectable()
 export class UserService {
