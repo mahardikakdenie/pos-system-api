@@ -60,6 +60,38 @@ export class ProfileDTO {
   @ApiProperty({example: 'uuid'})
   company_id: string;
 }
+export class ProfileDATA {
+  @IsUUID()
+  id: string;
+
+  @IsString()
+  @IsOptional()
+  phone: string;
+
+  @IsString()
+  @IsOptional()
+  role_id: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ example: 'string' })
+  name: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ example: 'string' })
+  username: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ example: 'string' })
+  avatar: string;
+
+  @IsUUID()
+  @IsOptional()
+  @ApiProperty({example: 'uuid'})
+  company_id: string;
+}
 
 export class RegisterDto {
   @IsEmail({}, { message: 'Email harus valid' })
