@@ -2,6 +2,7 @@ import { BadGatewayException, BadRequestException, Injectable } from '@nestjs/co
 import { entities } from 'common/helpers';
 import { SupabaseService } from 'supabase/supabase.service';
 import { RoleDTO } from './role.dto';
+import { mergeWithExisting } from 'common/utils/merge-with-existing';
 
 @Injectable()
 export class RoleService {
@@ -66,6 +67,73 @@ export class RoleService {
             return data;
         } catch (error) {
             throw new BadGatewayException('Unexpected error while creating role');
+        }
+    }
+
+    async updateRole(rolePayload: RoleDTO, roleId: number) {
+        try {
+            const fetchExistingData = async (
+                fields: string[],
+            ): Promise<any | null> => {
+                const { data, error } = await this.supabaseService
+                    .getClient()
+                    .from('roles')
+                    .select(fields.join(','))
+                    .eq('id', roleId)
+                    .single();
+
+                if (error) {
+                    if (error.code === 'PGRST116') return null;
+                    throw new BadGatewayException({
+                        name: error.name,
+                        message: error.message,
+                    });
+                }
+                return data;
+            };
+            
+            const mergedData = await mergeWithExisting(
+                rolePayload as Partial<RoleDTO>,
+                {
+                    profileFields: ['name', 'descriptions'],
+                    fetchExistingData: fetchExistingData,
+                },
+            );
+
+            const { data, error } = await this.supabaseService.getClient()
+                .from('roles')
+                .upsert({ id: roleId, ...mergedData })
+                .select('*');
+
+                if (error) {
+                    throw new BadRequestException({
+                        name: error.name,
+                        message: error.message,
+                    });
+                }
+
+                return data;
+        } catch (error) {
+            throw new BadGatewayException(error);
+        }
+    }
+
+    async deleteRole(roleId: number) {
+        try {
+            const {data, error} = await this.supabaseService.getClient().from('roles')
+                .delete()
+                .eq('id', roleId).select('*');
+
+                if (error) {
+                    throw new BadRequestException({
+                        name: error.name,
+                        message: error.message,
+                    });
+                }
+
+                return data;
+        } catch (error) {
+            throw new BadGatewayException(error);   
         }
     }
 }
