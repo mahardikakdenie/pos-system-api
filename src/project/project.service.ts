@@ -113,25 +113,24 @@ export class ProjectService {
         }
     }
 
-    async getMyProjects(profile: ProfileDATA) {
-        try {
-            if (!profile) throw new UnauthorizedException();
+    async getMyProjects(profile: ProfileDATA, selectedEntities: string = '') {
+        if (!profile?.id) throw new UnauthorizedException();
 
-            const { data, error, count } = await this.supabaseService.getClient()
-                .from('projects')
-                .select(entities('*', `resumes(id,name, profiles(id))`))
-                .eq('resume.profiles.id', profile?.id as string);
+        const { data, error } = await this.supabaseService
+            .getClient()
+            .from('projects')
+            .select(
+                entities('*,resumes!inner(id, name, owner_id, profiles!inner(id))', selectedEntities)
+            )
+            .eq('resumes.profiles.id', profile.id);
 
-                if (error) {
-                    throw new BadRequestException({
-                        name: error.name,
-                        message: error.message,
-                    });
-                }
-
-                return data;
-        } catch (error) {
-            throw new BadGatewayException(error);
+        if (error) {
+            throw new BadRequestException({
+                message: error.message,
+                name: error.name,
+            });
         }
+
+        return data;
     }
 }
