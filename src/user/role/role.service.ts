@@ -1,6 +1,7 @@
-import { BadGatewayException, Injectable } from '@nestjs/common';
+import { BadGatewayException, BadRequestException, Injectable } from '@nestjs/common';
 import { entities } from 'common/helpers';
 import { SupabaseService } from 'supabase/supabase.service';
+import { RoleDTO } from './role.dto';
 
 @Injectable()
 export class RoleService {
@@ -43,6 +44,28 @@ export class RoleService {
             };
         } catch (error) {
             throw new BadGatewayException(error);
+        }
+    }
+
+
+    async createRole(rolePayload: RoleDTO) {
+        try {
+            const { data, error } = await this.supabaseService
+                .getClient()
+                .from('roles')
+                .insert(rolePayload)
+                .select('*');
+
+            if (error) {
+                throw new BadRequestException({
+                    message: error.message,
+                    reason: error.message,
+                });
+            }
+
+            return data;
+        } catch (error) {
+            throw new BadGatewayException('Unexpected error while creating role');
         }
     }
 }
