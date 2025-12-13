@@ -123,8 +123,6 @@ export class UserService {
   }
 
   async createUser(userPayload: UserDTO) {
-    // HAPUS try-catch global, atau handle dengan benar
-
     const { data, error } = await this.supabaseService
       .getAdminClient()
       .auth.admin.createUser({
