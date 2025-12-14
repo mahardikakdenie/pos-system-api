@@ -21,6 +21,7 @@ export const USER_SCHEME = `
       email,
       role_id,
       status,
+      name,
       created_at,
       phone,
       role:roles!inner(
