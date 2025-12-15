@@ -33,7 +33,7 @@ export class UpdateOrderDto {
     @ApiProperty({
         description: 'Status of the new order',
         example: 'pending',
-        required: true,
+        required: false,
     })
     @IsString()
     @MaxLength(255)
@@ -42,9 +42,17 @@ export class UpdateOrderDto {
     @ApiProperty({
         description: 'source of the new order',
         example: 'pos',
-        required: true,
+        required: false,
     })
     @IsString()
     @MaxLength(255)
     source: string;
+
+    @ApiProperty({
+        description: 'Documentation updated at for updated a new Order',
+        example: 'timestamp',
+        required: false,
+    })
+    @IsString()
+    updated_at: string;
 }
