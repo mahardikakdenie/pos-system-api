@@ -2,6 +2,9 @@ import { BadGatewayException, BadRequestException, Injectable, UnauthorizedExcep
 import { SupabaseService } from 'supabase/supabase.service';
 import { ProfileDATA } from 'user/user.dto';
 import { OrderDto } from './dto/order.dto';
+import { CreateOrderDto } from './dto/create-order.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
+import { mergeWithExisting } from 'common/utils/merge-with-existing';
 
 @Injectable()
 export class OrderService {
@@ -45,7 +48,7 @@ export class OrderService {
         }
     }
 
-    async createOrders(user: ProfileDATA, orderPayload: OrderDto) {
+    async createOrders(user: ProfileDATA, orderPayload: CreateOrderDto) {
         try {
             if (!user) throw new UnauthorizedException();
             const { data, error } = await this.supabaseService.getClient()
@@ -53,6 +56,43 @@ export class OrderService {
                 .insert(orderPayload);
 
             if (error) throw new BadRequestException({
+                name: error.name,
+                message: error.message,
+            });
+
+            return data;
+        } catch (error) {
+            throw new BadGatewayException(error);
+        }
+    }
+
+    async updateOrders(user: ProfileDATA, orderPayload: UpdateOrderDto, orderId: string) {
+        try {
+            if (!user) throw new UnauthorizedException();
+            const mergedData = await mergeWithExisting(orderPayload as Partial<UpdateOrderDto>, {
+                profileFields: [],
+                fetchExistingData: async (fields: string[]): Promise<any> => {
+                    const { data, error } = await this.supabaseService.getClient()
+                        .from('orders')
+                        .select(fields.join(','))
+                        .eq('id', orderId);
+
+
+                    if (error) throw new BadRequestException({
+                        name: error.name,
+                        message: error.message,
+                    });
+
+                    return data;
+                },
+            });
+            const { data, error } = await this.supabaseService.getClient()
+                .from('orders')
+                .upsert({ id: orderId, ...mergedData })
+                .select('*');
+
+
+            if (error) throw new BadGatewayException({
                 name: error.name,
                 message: error.message,
             });
