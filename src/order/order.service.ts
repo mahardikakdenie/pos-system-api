@@ -26,19 +26,38 @@ export class OrderService {
         }
     }
 
+    async getDetailOrders(orderId: string) {
+        try {
+            const { data, error } = await this.supabaseService.getClient()
+                .from('orders')
+                .select('*')
+                .eq('id', orderId)
+                .single();
+
+            if (error) throw new BadRequestException({
+                name: error.name,
+                message: error.message,
+            });
+
+            return data;
+        } catch (error) {
+            throw new BadGatewayException(error);
+        }
+    }
+
     async createOrders(user: ProfileDATA, orderPayload: OrderDto) {
         try {
             if (!user) throw new UnauthorizedException();
-            const {data, error} = await this.supabaseService.getClient()
+            const { data, error } = await this.supabaseService.getClient()
                 .from('orders')
                 .insert(orderPayload);
 
-                if (error) throw new BadRequestException({
-                    name: error.name,
-                    message: error.message,
-                });
+            if (error) throw new BadRequestException({
+                name: error.name,
+                message: error.message,
+            });
 
-                return data;
+            return data;
         } catch (error) {
             throw new BadGatewayException(error);
         }
