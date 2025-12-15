@@ -22,6 +22,15 @@ export class CreateOrderDto {
   productId?: string;
 
   @ApiProperty({
+    description: 'Company ID associated with the order',
+    example: 'p1q2r3s4-t5u6-7890-v1w2-x3y4z5a6b7c8',
+    required: false,
+  })
+  @IsOptional()
+  @IsUUID()
+  company_id?: string;
+
+  @ApiProperty({
     description: 'Status of the new order',
     example: 'pending',
     required: true,
@@ -29,4 +38,13 @@ export class CreateOrderDto {
   @IsString()
   @MaxLength(255)
   status: string;
+
+  @ApiProperty({
+    description: 'source of the new order',
+    example: 'pos',
+    required: true,
+  })
+  @IsString()
+  @MaxLength(255)
+  source: string;
 }
