@@ -12,9 +12,10 @@ import { ThemeModule } from './theme/theme.module';
 import { ResumeModule } from './resume/resume.module';
 import { RecipeModule } from './recipe/recipe.module';
 import { ProjectModule } from './project/project.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
-  imports: [AuthModule, UserModule, ProductModule, CompanyModule, ThemeModule, ResumeModule, RecipeModule, ProjectModule],
+  imports: [AuthModule, UserModule, ProductModule, CompanyModule, ThemeModule, ResumeModule, RecipeModule, ProjectModule, OrderModule],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService, SupabaseService],
 })
