@@ -21,6 +21,8 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { ProfileDATA } from 'user/user.dto';
 import { AuthGuard } from 'auth/auth.guard';
 import { OrderDto } from './dto/order.dto';
+import { RoleGuard } from 'auth/role.guard.guard';
+import { RequireRole } from 'common/common.decorator';
 interface AuthenticatedRequest extends Request {
   user: ProfileDATA;
 }
@@ -31,6 +33,9 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Get()
+  @UseGuards(AuthGuard, RoleGuard)
+  @RequireRole('superadmin')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all orders' })
   @ApiResponse({
     status: 200,
@@ -44,6 +49,9 @@ export class OrderController {
   }
 
   @Get(':id')
+  @UseGuards(AuthGuard, RoleGuard)
+  @RequireRole('superadmin')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get order by ID' })
   @ApiParam({ name: 'id', type: String, description: 'Order ID' })
   @ApiResponse({
@@ -58,6 +66,9 @@ export class OrderController {
   }
 
   @Post()
+  @UseGuards(AuthGuard, RoleGuard)
+  @RequireRole('superadmin')
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new order' })
@@ -74,6 +85,9 @@ export class OrderController {
   }
 
   @Put(':id')
+  @UseGuards(AuthGuard, RoleGuard)
+  @RequireRole('superadmin')
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update an existing order' })
