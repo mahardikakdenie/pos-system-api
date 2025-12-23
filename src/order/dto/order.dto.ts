@@ -36,11 +36,27 @@ export class OrderDto {
   productId: string | null;
 
   @ApiProperty({
+    description: 'Company Id associated with the order',
+    example: 'plsas-232xxx',
+    required: false,
+  })
+  @IsOptional()
+  @IsUUID()
+  companyId: string;
+
+  @ApiProperty({
     description: 'Current status of the order',
     example: 'pending',
   })
   @IsString()
   status: string;
+
+  @ApiProperty({
+    description: 'Source the order',
+    example: 'website',
+  })
+  @IsString()
+  source: string;
 
   @ApiProperty({
     description: 'Timestamp when the order was last updated (nullable)',
