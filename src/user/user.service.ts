@@ -2,8 +2,6 @@
 import {
   BadGatewayException,
   BadRequestException,
-  HttpException,
-  HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -11,10 +9,13 @@ import { Profile } from '../auth/auth.service';
 import { SupabaseService } from '../supabase/supabase.service';
 import { Paginated } from '../common/types/pagination.type';
 import { ProfileDTO, UserDTO } from './user.dto';
-import { PostgrestResponse, User } from '@supabase/supabase-js';
 import { MailerService } from 'mailer/mailer.service';
 import { mergeWithExisting } from 'common/utils/merge-with-existing';
 import { entities } from 'common/helpers';
+import {
+  PostgrestResponse,
+  PostgrestSingleResponse,
+} from '@supabase/supabase-js';
 
 export const USER_SCHEME = `
       id,
@@ -91,7 +92,7 @@ export class UserService {
         all: all ?? 0,
       };
     } catch (error) {
-      throw new Error(error);
+      throw new BadGatewayException(error);
     }
   }
 
@@ -99,13 +100,13 @@ export class UserService {
     try {
       const { data, error } = await this.getSingleUser(userId);
 
-      if (error) throw new Error(error.message);
+      if (error) throw new BadRequestException(error.message);
 
       return {
         data,
       };
     } catch (error) {
-      throw new Error(error);
+      throw new BadGatewayException(error);
     }
   }
 
@@ -120,7 +121,7 @@ export class UserService {
         error,
       };
     } catch (error) {
-      throw new Error(error);
+      throw new BadGatewayException(error);
     }
   }
 
@@ -147,16 +148,18 @@ export class UserService {
       });
     }
 
-    const { data: profileData, error: profileError } =
-      await this.supabaseService
-        .getClient()
-        .from('profiles')
-        .update({
-          role_id: userPayload.role_id,
-        })
-        .eq('id', data.user.id)
-        .select('*')
-        .single();
+    const {
+      data: profileData,
+      error: profileError,
+    }: PostgrestResponse<UserDTO> = await this.supabaseService
+      .getClient()
+      .from('profiles')
+      .update({
+        role_id: userPayload.role_id,
+      })
+      .eq('id', data.user.id)
+      .select('*')
+      .single();
     await this.mailService.sendEmail(
       userPayload.email,
       'Verifikasi Akun Anda',
@@ -188,25 +191,24 @@ export class UserService {
       throw new BadRequestException({ message: profileError.message });
     }
 
-    return {
-      profileData,
-    };
+    return profileData;
   }
 
   async updateUserProfile(profilPayload: ProfileDTO, userId: string) {
     try {
       const fetchExistingData = async (
         fields: string[],
-      ): Promise<any | null> => {
-        const { data, error } = await this.supabaseService
-          .getClient()
-          .from('profiles')
-          .select(fields.join(','))
-          .eq('id', userId)
-          .single();
+      ): Promise<Record<string, string> | null> => {
+        const { data, error }: PostgrestSingleResponse<Record<string, string>> =
+          await this.supabaseService
+            .getClient()
+            .from('profiles')
+            .select(fields.join(','))
+            .eq('id', userId)
+            .single();
 
         if (error) {
-          if (error.code === 'PGRST116') return null;
+          // if (error.code === 'PGRST116') return null;
           throw new BadGatewayException({
             name: error.name,
             message: error.message,
@@ -223,13 +225,12 @@ export class UserService {
           fetchExistingData: fetchExistingData,
         },
       );
-      const { data, error } = await this.supabaseService
-        .getClient()
-        .from('profiles')
-        .upsert({ id: userId, ...mergedData })
-        .select('*');
-
-      console.log(error);
+      const { data, error }: PostgrestResponse<Record<string, string>> =
+        await this.supabaseService
+          .getClient()
+          .from('profiles')
+          .upsert({ id: userId, ...mergedData })
+          .select('*');
 
       if (error) {
         throw new BadGatewayException({
