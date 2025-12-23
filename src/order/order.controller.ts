@@ -80,7 +80,10 @@ export class OrderController {
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 502, description: 'Bad Gateway.' })
-  async createOrders(@Req() req: AuthenticatedRequest, @Body() createOrderDto: CreateOrderDto) {
+  async createOrders(
+    @Req() req: AuthenticatedRequest,
+    @Body() createOrderDto: CreateOrderDto,
+  ) {
     return this.orderService.createOrders(req.user, createOrderDto);
   }
 
