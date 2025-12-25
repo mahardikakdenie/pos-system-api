@@ -20,7 +20,7 @@ export class StatsController {
                 message: { type: 'string', example: 'Success' },
                 total: { type: 'number', example: 2 },
                 data: {
-                    type: 'array',
+                    type: 'object',
                     items: {
                         type: 'object',
                         properties: {
