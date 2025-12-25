@@ -37,32 +37,22 @@ export class UserService {
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly mailService: MailerService,
-  ) {}
+  ) { }
 
   async getUsers(page = 1, limit = 10): Promise<Paginated<Profile>> {
     const offset = (page - 1) * limit;
 
-    // Get total count
-    const { count, error: countError } = await this.supabaseService
-      .getClient()
-      .from('profiles')
-      .select('*', { count: 'exact', head: false })
-      .neq('role_id', 0);
-
-    if (countError) throw new Error(countError.message);
-
-    const rolesEntities = `role:roles!inner(
-        id,
-        name,
-        descriptions
-      )`;
+    const rolesEntities = `role:roles(
+    id,
+    name,
+    descriptions
+)`;
 
     // Get data
-    const { data, error } = await this.supabaseService
+    const { data, error, count } = await this.supabaseService
       .getClient()
       .from('profiles')
-      .select(entities('*', rolesEntities))
-      .neq('role_id', 0)
+      .select(entities('*', rolesEntities), { count: 'exact' })
       .range(offset, offset + limit - 1);
 
     if (error) throw new Error(error.message);
@@ -83,8 +73,7 @@ export class UserService {
       const { count: all, error: countError } = await this.supabaseService
         .getClient()
         .from('profiles')
-        .select('*', { count: 'planned', head: false })
-        .neq('role_id', 0);
+        .select('*', { count: 'planned', head: false });
 
       if (countError) throw new Error(countError.message);
 
