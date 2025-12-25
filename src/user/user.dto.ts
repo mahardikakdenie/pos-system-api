@@ -1,6 +1,6 @@
 // src/auth/dto/login.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, isNotEmpty, IsNotEmpty, IsOptional, isString, IsString, IsUUID } from 'class-validator';
+import { IsEmail, isNotEmpty, IsNotEmpty, IsNumber, IsOptional, isString, IsString, IsUUID } from 'class-validator';
 
 export class UserDTO {
   @IsEmail({}, { message: 'Email harus valid' })
@@ -15,9 +15,9 @@ export class UserDTO {
   @IsNotEmpty({ message: 'Password wajib diisi' })
   phone: string;
 
-  @IsString()
-  @IsNotEmpty({ message: 'Password wajib diisi' })
-  role_id: string;
+  @IsNumber()
+  @IsNotEmpty({ message: 'RoleId wajib diisi' })
+  role_id: number;
 
   @IsString()
   @ApiProperty({ example: 'string' })
