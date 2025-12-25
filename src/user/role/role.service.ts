@@ -13,7 +13,7 @@ export class RoleService {
         limit: number = 10,
         selectedEntities: string = '',
         search: string = '',
-        orderBy: string = '',
+        orderBy: string = 'name',
         sorting: 'desc' | 'asc' = 'desc'
     ) {
         try {
