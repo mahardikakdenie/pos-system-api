@@ -20,11 +20,14 @@ export class StatsService {
         throw new BadRequestException(roleError);
       }
 
-      const { data: allProfiles, error: profilesError } =
-        await this.supabaseService
-          .getClient()
-          .from('profiles')
-          .select('role_id, created_at');
+      const {
+        data: allProfiles,
+        error: profilesError,
+        count,
+      } = await this.supabaseService
+        .getClient()
+        .from('profiles')
+        .select('role_id, created_at, status', { count: 'exact' });
 
       if (profilesError) {
         throw new BadRequestException(profilesError);
@@ -45,15 +48,34 @@ export class StatsService {
         }
       }
 
-      const result: { [key: string]: number; all: number; new: number } = {
-        all: 0,
+      const { count: countActive } = await this.supabaseService
+        .getClient()
+        .from('profiles')
+        .select('status, email', { count: 'exact' })
+        .eq('status', 'active');
+
+      const { count: countInActive } = await this.supabaseService
+        .getClient()
+        .from('profiles')
+        .select('status, email', { count: 'exact' })
+        .eq('status', 'inactive');
+
+      const result: {
+        [key: string]: number;
+        all: number;
+        new: number;
+        active: number;
+        inactive: number;
+      } = {
+        all: count ?? 0,
         new: newCount,
+        active: countActive ?? 0,
+        inactive: countInActive ?? 0,
       };
 
       for (const role of roles) {
         const count = countMap.get(role.id) || 0;
         result[role.name] = count;
-        result.all += count;
       }
 
       return result;
