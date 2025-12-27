@@ -7,9 +7,11 @@ import { RoleService } from './role/role.service';
 import { RoleController } from './role/role.controller';
 import { StatsService } from './stats/stats.service';
 import { StatsController } from './stats/stats.controller';
+import { RoleStatsService } from './role/stats/stats.service';
+import { RoleStatsController } from './role/stats/stats.controller';
 
 @Module({
-  providers: [UserService, SupabaseService, MailerService, RoleService, StatsService],
-  controllers: [UserController, RoleController, StatsController],
+  providers: [UserService, SupabaseService, MailerService, RoleService, StatsService, RoleStatsService],
+  controllers: [UserController, RoleController, StatsController, RoleStatsController],
 })
 export class UserModule {}
