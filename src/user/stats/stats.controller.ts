@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { StatsService } from './stats.service';
 import { AuthGuard } from 'auth/auth.guard';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBadGatewayResponse, ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 
 @Controller('/api/user/stats')
 @UseGuards(AuthGuard)
@@ -35,5 +35,30 @@ export class StatsController {
     })
     async getDataStats() {
         return await this.userStatService.getSummaries();
+    }
+
+    @Get('growth')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Get monthly user growth for the current year',
+        description:
+            'Returns an array of 12 integers representing the number of new users registered each month (January to December) of the current year.',
+    })
+    @ApiOkResponse({
+        description: 'Successfully retrieved monthly user growth data.',
+        schema: {
+            type: 'array',
+            items: {
+                type: 'integer',
+                example: 42,
+                minimum: 0,
+            },
+            example: [10, 15, 22, 18, 30, 25, 28, 35, 40, 38, 45, 50],
+        },
+    })
+    @ApiUnauthorizedResponse({ description: 'Unauthorized: Missing or invalid JWT token.' })
+    @ApiBadGatewayResponse({ description: 'Bad Gateway: Failed to fetch data from the database.' })
+    async getUserGrowth() {
+        return await this.userStatService.getUserGrowth();
     }
 }

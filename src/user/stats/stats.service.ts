@@ -53,7 +53,6 @@ export class StatsService {
         .select('status', { count: 'exact' })
         .eq('status', 'inactive');
 
-      // === Bulan Ini (30 hari terakhir) ===
       const { count: allThisMonth } = await this.supabaseService
         .getClient()
         .from('profiles')
@@ -88,10 +87,12 @@ export class StatsService {
         .gte('created_at', thirtyDaysAgo.toISOString());
 
       for (const p of profilesThisMonth ?? []) {
-        roleCountsThisMonth.set(p.role_id, (roleCountsThisMonth.get(p.role_id) || 0) + 1);
+        roleCountsThisMonth.set(
+          p.role_id,
+          (roleCountsThisMonth.get(p.role_id) || 0) + 1,
+        );
       }
 
-      // === Bulan Lalu (hari ke-60 s.d ke-30) ===
       const { count: allLastMonth } = await this.supabaseService
         .getClient()
         .from('profiles')
@@ -99,7 +100,9 @@ export class StatsService {
         .gte('created_at', sixtyDaysAgo.toISOString())
         .lt('created_at', thirtyDaysAgo.toISOString());
 
-      const sevenDaysAgoLastMonth = new Date(sixtyDaysAgo.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const sevenDaysAgoLastMonth = new Date(
+        sixtyDaysAgo.getTime() + 7 * 24 * 60 * 60 * 1000,
+      );
       const { count: newLastMonth } = await this.supabaseService
         .getClient()
         .from('profiles')
@@ -131,13 +134,16 @@ export class StatsService {
         .gte('created_at', sixtyDaysAgo.toISOString())
         .lt('created_at', thirtyDaysAgo.toISOString());
 
-      for (const p of (profilesLastMonth ?? [])) {
-        roleCountsLastMonth.set(p.role_id, (roleCountsLastMonth.get(p.role_id) || 0) + 1);
+      for (const p of profilesLastMonth ?? []) {
+        roleCountsLastMonth.set(
+          p.role_id,
+          (roleCountsLastMonth.get(p.role_id) || 0) + 1,
+        );
       }
 
       const calcChange = (current: number, previous: number): number => {
         if (previous === 0) return current > 0 ? 100 : 0;
-        return parseFloat(((current - previous) / previous * 100).toFixed(2));
+        return parseFloat((((current - previous) / previous) * 100).toFixed(2));
       };
 
       const result: Record<string, number> = {
@@ -148,15 +154,55 @@ export class StatsService {
         new_change_percent: calcChange(newThisMonth ?? 0, newLastMonth ?? 0),
 
         active: countActive ?? 0,
-        active_change_percent: calcChange(activeThisMonth ?? 0, activeLastMonth ?? 0),
+        active_change_percent: calcChange(
+          activeThisMonth ?? 0,
+          activeLastMonth ?? 0,
+        ),
 
         inactive: countInActive ?? 0,
-        inactive_change_percent: calcChange(inactiveThisMonth ?? 0, inactiveLastMonth ?? 0),
+        inactive_change_percent: calcChange(
+          inactiveThisMonth ?? 0,
+          inactiveLastMonth ?? 0,
+        ),
       };
-    
+
       return result;
     } catch (error) {
       throw new BadGatewayException('Failed to fetch statistics', {
+        cause: error,
+      });
+    }
+  }
+
+  async getUserGrowth() {
+    try {
+      const currentYear = new Date().getFullYear();
+      const startOfYear = new Date(currentYear, 0, 1).toISOString();
+      const endOfYear = new Date(currentYear + 1, 0, 1).toISOString();
+
+      const { data, error } = await this.supabaseService
+        .getClient()
+        .from('profiles')
+        .select('created_at')
+        .gte('created_at', startOfYear)
+        .lt('created_at', endOfYear);
+
+      if (error) {
+        throw new BadRequestException(error);
+      }
+
+      const monthlyCounts = Array(12).fill(0);
+
+      for (const record of data) {
+        const month = new Date(record.created_at).getMonth();
+        if (month >= 0 && month < 12) {
+          monthlyCounts[month]++;
+        }
+      }
+
+      return monthlyCounts;
+    } catch (error) {
+      throw new BadGatewayException('Failed to fetch user growth', {
         cause: error,
       });
     }
