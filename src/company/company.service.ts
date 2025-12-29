@@ -7,17 +7,24 @@ import { entities } from 'common/helpers';
 export class CompanyService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
-  async getDataCompanies(selectedEntities: string = '', orderBy: string = 'id') {
+  async getDataCompanies(limit: number = 10, page: number = 1,selectedEntities: string = '', orderBy: string = 'id') {
     try {
-      const { data, error } = await this.supabaseService
+        const offset = (page - 1) * limit;
+      const { data, error, count } = await this.supabaseService
         .getClient()
         .from('companies')
         .select(entities('*', selectedEntities))
-        .order(orderBy);
+        .order(orderBy, {ascending: true})
+        .range(offset, offset + limit - 1);
 
       if (error) throw new BadGatewayException({ message: error.message });
 
-      return data;
+      return {
+        limit,
+        page,
+        data,
+        total: count,
+      };
     } catch (error) {
       throw new BadGatewayException(error);
     }
