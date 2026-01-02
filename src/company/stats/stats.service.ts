@@ -18,7 +18,7 @@ export class StatsService {
                 }
 
                 return {
-                    count,
+                    all: count,
                 };
         } catch (error) {
             throw new BadGatewayException(error);
