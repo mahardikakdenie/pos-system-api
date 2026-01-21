@@ -27,3 +27,16 @@ export class CompanyDTO {
     @IsNotEmpty()
     status: string;
 }
+export class CompanySummaryResponseDto {
+    @ApiProperty({ example: 150 })
+    total: number;
+
+    @ApiProperty({ example: 120 })
+    active: number;
+
+    @ApiProperty({ example: 30 })
+    inactive: number;
+
+    @ApiProperty({ example: '2024-05-20T10:00:00.000Z' })
+    updatedAt: string;
+}

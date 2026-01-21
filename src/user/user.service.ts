@@ -42,11 +42,7 @@ export class UserService {
   async getUsers(page = 1, limit = 10): Promise<Paginated<Profile>> {
     const offset = (page - 1) * limit;
 
-    const rolesEntities = `role:roles(
-    id,
-    name,
-    descriptions
-)`;
+    const rolesEntities = 'role:roles(id, name, descriptions)';
 
     // Get data
     const { data, error, count } = await this.supabaseService
@@ -55,7 +51,7 @@ export class UserService {
       .select(entities('*', rolesEntities), { count: 'exact' })
       .range(offset, offset + limit - 1);
 
-    if (error) throw new Error(error.message);
+    if (error) throw new BadRequestException(error.message);
 
     return {
       limit,
@@ -75,7 +71,7 @@ export class UserService {
         .from('profiles')
         .select('*', { count: 'planned', head: false });
 
-      if (countError) throw new Error(countError.message);
+      if (countError) throw new BadRequestException(countError.message);
 
       return {
         all: all ?? 0,
@@ -105,10 +101,9 @@ export class UserService {
         .getAdminClient()
         .auth.admin.deleteUser(userId);
 
-      return {
-        data,
-        error,
-      };
+      if (error) throw new BadRequestException(error.message);
+
+      return { data };
     } catch (error) {
       throw new BadGatewayException(error);
     }
@@ -149,32 +144,8 @@ export class UserService {
       .eq('id', data.user.id)
       .select('*')
       .single();
-    await this.mailService.sendEmail(
-      userPayload.email,
-      'Verifikasi Akun Anda',
-      'Klik link berikut untuk verifikasi: https://ensiklotari.id/verify?token=abc123',
-      `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto;">
-      <h2>👋 Halo!</h2>
-      <p>Terima kasih telah mendaftar di Ensiklotari.</p>
-      <p>Silakan verifikasi akun Anda dengan mengklik tombol di bawah:</p>
-      
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="https://ensiklotari.id/verify?token=abc123"
-           style="background-color: #4F46E5; color: white; padding: 12px 24px; 
-                  text-decoration: none; border-radius: 6px; font-weight: bold; 
-                  display: inline-block;">
-          Verifikasi Akun
-        </a>
-      </div>
 
-      <p style="font-size: 12px; color: #666;">
-        Jika tombol tidak berfungsi, salin link berikut:<br>
-        https://ensiklotari.id/verify?token=abc123
-      </p>
-    </div>
-  `,
-    );
+    await this.sendVerificationEmail(userPayload.email);
 
     if (profileError) {
       throw new BadRequestException({ message: profileError.message });
@@ -197,7 +168,6 @@ export class UserService {
             .single();
 
         if (error) {
-          // if (error.code === 'PGRST116') return null;
           throw new BadGatewayException({
             name: error.name,
             message: error.message,
@@ -232,6 +202,38 @@ export class UserService {
     } catch (error) {
       throw new BadGatewayException(error);
     }
+  }
+
+  private async sendVerificationEmail(email: string) {
+    const verificationLink = 'https://ensiklotari.id/verify?token=abc123';
+    const emailBody = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto;">
+        <h2>👋 Halo!</h2>
+        <p>Terima kasih telah mendaftar di Ensiklotari.</p>
+        <p>Silakan verifikasi akun Anda dengan mengklik tombol di bawah:</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${verificationLink}"
+             style="background-color: #4F46E5; color: white; padding: 12px 24px; 
+                    text-decoration: none; border-radius: 6px; font-weight: bold; 
+                    display: inline-block;">
+            Verifikasi Akun
+          </a>
+        </div>
+  
+        <p style="font-size: 12px; color: #666;">
+          Jika tombol tidak berfungsi, salin link berikut:<br>
+          ${verificationLink}
+        </p>
+      </div>
+    `;
+
+    await this.mailService.sendEmail(
+      email,
+      'Verifikasi Akun Anda',
+      `Klik link berikut untuk verifikasi: ${verificationLink}`,
+      emailBody,
+    );
   }
 
   // === Helpers ===
